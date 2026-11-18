@@ -1,9 +1,11 @@
 ---
 source: Northgate Bank Help
-section: Payment confirmations
+section: Bank letters
 updated: 2026-11-18
 ---
 
-A payment confirmation is proof that one payment was sent. It shows the amount, the date, who you paid and a reference number.
+A balance confirmation letter shows how much money is in your account. It is often needed for visa applications.
 
-To get one, open the app, tap Payments, tap the payment, then tap Share confirmation. It is available straight away.
+A proof of address letter shows your name and address. It is often needed for a landlord or to register with a GP.
+
+The chatbot cannot make bank letters. A member of staff must request them, and they are ready in about 2 working days.
