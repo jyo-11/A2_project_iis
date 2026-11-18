@@ -1,54 +1,113 @@
-"""The supplied Lab 4 prototype.
+"""Northgate Bank helper: a prototype bank chatbot (built on the supplied Lab 4 prototype).
 
-    python app.py            serve on 8000
-    python app.py --port 8001
+    python app.py            then open http://localhost:8001
 
-The two turns below are local code: they work with no model at all. The model is only asked for the
-ordinary case, and its reply is checked before anything is rendered.
+Path A: the bot understands everyday words, offers options and answers from a help page.
+Path B: if the bot cannot do it, it drafts a note, the customer checks it, then a (simulated) person takes over.
 """
 import json, os, sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import model  # noqa: E402
+import model, retrieve
+from bank_data import NEEDS, PAYMENTS, option_text, payment_text, understand
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-SCHEMA = {"reply": str, "options": list, "action": (dict, type(None)), "unsupported_claims": list}
-APPOINTMENTS = [{"id": "derm-14nov", "clinic": "Dermatology", "date": "14 Nov", "time": "10:20"},
-                {"id": "physio-20nov", "clinic": "Physiotherapy", "date": "20 Nov", "time": "09:00"}]
+
+# One conversation at a time is enough for a prototype.
+STATE = {"history": [], "need": None}
+
+NOTE_SCHEMA = {"need": str, "for": str, "needed_by": str}
+NOTE_INSTRUCTIONS = ("Write the note for the agent. Use only what the customer said in this chat. "
+                     "Reply in JSON with the keys need, for, needed_by. Leave a key empty if the customer did not say it.")
 
 
-def valid(data):
-    return isinstance(data, dict) and all(k in data and isinstance(data[k], t) for k, t in SCHEMA.items())
+def reply(text, options=None, **extra):
+    """Every answer has the same shape, and is also added to the chat history."""
+    STATE["history"].append("Bot: " + text)
+    out = {"reply": text, "options": options or []}
+    out.update(extra)
+    return out
 
 
-def fallback_turn():
-    """A malformed reply is a caught error, never a blank page."""
-    return {"reply": "I could not read the reply, so I have not changed anything. Try again or ask the module lead.",
-            "options": [], "action": None, "unsupported_claims": []}
+def help_answer(section):
+    """Answer only from an approved help page. If there is none, say so instead of guessing."""
+    pages = [p for p in retrieve.load() if p["section"].lower() == section.lower()]
+    if not pages:
+        return reply("I can't find a help page for this, so I won't guess. A person can help.", ["Talk to a person"])
+    text = " ".join(p["text"] for p in pages)
+    return reply(text, ["Start again"], source=pages[0]["source"] + ": " + pages[0]["section"])
 
 
-def clarification_turn(candidates):
-    names = " or ".join("%s on %s" % (a["clinic"], a["date"]) for a in candidates)
-    return {"reply": "Which appointment: %s?" % names,
-            "options": [a["id"] for a in candidates], "action": None, "unsupported_claims": []}
+def choose_need(key):
+    """The customer picked an option. Path A if the bot can do it, Path B if not."""
+    STATE["need"] = key
+    need = NEEDS[key]
+    if key == "payment_confirmation":
+        return reply("Which payment?", [payment_text(p) for p in PAYMENTS], simulated="payment list is made up")
+    if need["bot_can_do"]:
+        return help_answer(need["help_section"])
+    return reply("I'm a bot and I can't help with this (" + need["label"] + "). A person can. Shall I connect you?",
+                 ["Yes, connect me", "No thanks"])
 
 
-def decline_turn():
-    return {"reply": "Dr Achebe has no clinic next week, and I cannot see your dialysis days, so I cannot "
-                     "avoid them. Here are the open slots; you choose.",
-            "options": ["Thu 09:40", "Fri 14:10"], "action": None, "unsupported_claims": ["clinic availability beyond next week"]}
+def draft_note():
+    """The AI drafts the note. The check below guarantees its shape, not that it is true, so the customer checks it."""
+    chat = "\n".join(STATE["history"])
+    messages = [{"role": "system", "content": NOTE_INSTRUCTIONS},
+                {"role": "user", "content": "Write the note for the agent from this chat:\n" + chat}]
+    data = model.call_json(messages, NOTE_SCHEMA)
+    ok = isinstance(data, dict) and all(isinstance(data.get(k), str) for k in NOTE_SCHEMA)
+    if not ok:
+        return {"need": "", "for": "", "needed_by": "", "problem": "I couldn't draft the note. Please fill it in."}
+    if not any(data[k] for k in NOTE_SCHEMA):
+        return {"need": "", "for": "", "needed_by": "", "problem": "I'm not sure what you need. Please fill it in."}
+    return {k: data[k] for k in NOTE_SCHEMA}
 
 
-def turn(message):
-    m = (message or "").lower()
-    if "achebe" in m or "next week" in m:
-        return decline_turn()
-    named = [a for a in APPOINTMENTS if a["clinic"].lower()[:5] in m]
-    if "appointment" in m and len(named) != 1:
-        return clarification_turn(APPOINTMENTS)
-    data = model.call_json([{"role": "user", "content": message}], SCHEMA)
-    return data if valid(data) else fallback_turn()
+def hand_over(note):
+    """Runs only after the customer confirmed the note."""
+    STATE["history"].append("Customer confirmed the note: " + json.dumps(note))
+    section = NEEDS[STATE["need"]]["help_section"] if STATE["need"] else ""
+    pages = [p for p in retrieve.load() if p["section"].lower() == section.lower()]
+    waiting = pages[0]["text"] if pages else ""          # help while waiting, from the same help page
+    agent_reply = "Hello, I've read your note (" + (note.get("need") or "your request") + "). I'll take it from here"
+    if note.get("needed_by"):
+        agent_reply += " and make sure it's done by " + note["needed_by"]
+    agent_reply += "."
+    return reply("Thanks. A person will join in about 6 minutes.", ["Start again"],
+                 wait="about 6 minutes (simulated)", while_waiting=waiting,
+                 agent={"note": note, "earlier_chat": STATE["history"][:-1], "reply": agent_reply})
+
+
+def turn(request):
+    """Decide what happens next. Simple rules decide the route, not the AI."""
+    if request.get("confirm_note"):
+        return hand_over(request["confirm_note"])
+    message = (request.get("message") or "").strip()
+    if message == "Start again":
+        STATE["history"].clear(); STATE["need"] = None
+        return {"reply": "Hi, I'm the Northgate Bank helper (a bot). What do you need?", "options": [], "reset": True}
+    STATE["history"].append("Customer: " + message)
+
+    for key in NEEDS:                                   # the customer clicked an option button
+        if message == option_text(key):
+            return choose_need(key)
+    for p in PAYMENTS:                                  # the customer picked a payment
+        if message == payment_text(p):
+            return help_answer("Payment confirmations")
+    if message in ("Yes, connect me", "Talk to a person"):
+        return reply("Before I connect you, please check this note. The person will see it first.",
+                     note=draft_note(), simulated="the AI note uses a recorded reply")
+    if message == "No thanks":
+        return reply("OK. Is there anything else?", ["Start again"])
+    if message == "Something else":
+        return reply("Tell me in a few words, or talk to a person.", ["Talk to a person"])
+
+    found = understand(message)                         # the customer typed in their own words
+    if found:
+        return reply("Did you mean…", [option_text(k) for k in found] + ["Something else"])
+    return reply("I'm not sure what you need. Is it one of these?",
+                 [option_text(k) for k in NEEDS] + ["Talk to a person"])
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -62,8 +121,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         n = int(self.headers.get("Content-Length", 0))
-        msg = json.loads(self.rfile.read(n).decode("utf-8")).get("message", "")
-        self._send(200, json.dumps(turn(msg)).encode("utf-8"))
+        request = json.loads(self.rfile.read(n).decode("utf-8"))
+        self._send(200, json.dumps(turn(request)).encode("utf-8"))
 
     def log_message(self, *a):
         pass
