@@ -19,6 +19,12 @@ def _pick(text):
     t = (text or "").lower()
     if os.environ.get("IIS_MOCK_BREAK"):
         return "malformed.txt"
+    if "note for the agent" in t:               # A2: recorded AI notes for the hand-over
+        if "visa" in t or "balance" in t:
+            return "note_visa.json"
+        if "address" in t or "landlord" in t:
+            return "note_address.json"
+        return "note_other.json"
     if "achebe" in t or "next week" in t:
         return "unsupported.json"
     if "appointment" in t and "dermatology" not in t and "physio" not in t:
