@@ -8,34 +8,35 @@
 NEEDS = {
     "statement": {
         "label": "Statement",
-    
+        "speed": "next working day",
         "bot_can_do": True,
         "help_section": "Statements",
         "words": ["statement", "account history", "transactions", "bank summary", "printout", "list of payments", "list of transfers", "last 3 months", "last 6 months", "last year"],
     },
     "payment_confirmation": {
         "label": "Payment confirmation",
+        "speed": "in the app now",
         "bot_can_do": True,
         "help_section": "Payment confirmations",
         "words": ["proof", "receipt", "went through", "confirmation", "transfer", "paid", "sent money", "payment", "transfer"],
     },
     "card": {
         "label": "Card help",
-        
+        "speed": "freeze now, new card in about 5 days",
         "bot_can_do": True,
         "help_section": "Cards",
         "words": ["card", "lost", "stolen", "pin", "stuck", "broken", "not working", "chip", "contactless","freeze", "cancel", "block", "unblock"],
     },
     "balance_letter": {
         "label": "Balance confirmation letter",
-        
+        "speed": "about 2 working days, made by a person",
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["balance", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
     },
     "address_letter": {
         "label": "Proof of address letter",
-        
+        "speed": "about 2 working days, made by a person",
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["address", "landlord", "gp"],
@@ -60,7 +61,9 @@ PAYMENTS = [
 def option_text(key):
     """What the customer sees on an option button, e.g. 'Statement · next working day'."""
     need = NEEDS[key]
-    return need["label"] + " · " + need["speed"]
+    if need.get("speed"):                    # an option without a speed just shows its label
+        return need["label"] + " · " + need["speed"]
+    return need["label"]
 
 
 def payment_text(p):
@@ -70,7 +73,7 @@ def payment_text(p):
 def understand(message):
     """Return the needs whose everyday words appear in the message (can be none, one or several)."""
     m = message.lower()
-    return [key for key, need in NEEDS.items() if any(w in m for w in need["words"])]
+    return [key for key, need in NEEDS.items() if any(w.lower() in m for w in need["words"])]
 
 
 if __name__ == "__main__":
