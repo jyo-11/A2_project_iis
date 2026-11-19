@@ -1,16 +1,16 @@
 ---
 source: Northgate Bank Help
 section: Payment confirmations
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
-A payment confirmation is proof that one payment was sent.
+A **payment confirmation** is proof that one payment was sent. It shows the amount, the date, who you paid and a reference number.
 
-You can get proof of a payment you've sent in the app by following the steps below:
+**To get a payment confirmation:**
 
-1. open the app.
+1. Open the app.
 2. Tap **Payments**.
 3. Select the payment.
 4. Tap **Share confirmation**.
 
-It is available straight away.It shows the amount, the date, who you paid and a reference number.
+It is available **straight away**.

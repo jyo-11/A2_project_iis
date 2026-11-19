@@ -9,12 +9,13 @@ import json, os, sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import model, retrieve
-from bank_data import NEEDS, PAYMENTS, option_text, payment_text, understand
+from bank_data import (NEEDS, PAYMENTS, ACCOUNTS, PAST_MONTH, THIS_MONTH, CARD_PROBLEMS,
+                       option_text, payment_text, understand, suggestions)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 # One conversation at a time is enough for a prototype.
-STATE = {"history": [], "need": None}
+STATE = {"history": [], "need": None, "account": None}
 
 NOTE_SCHEMA = {"need": str, "for": str, "needed_by": str}
 NOTE_INSTRUCTIONS = ("Write the note for the agent. Use only what the customer said in this chat. "
@@ -29,13 +30,22 @@ def reply(text, options=None, **extra):
     return out
 
 
-def help_answer(section):
-    """Answer only from an approved help page. If there is none, say so instead of guessing."""
+def help_page(section):
+    """Find the help page for a section. Returns (page info, page text with its line breaks kept), or (None, "")."""
     pages = [p for p in retrieve.load() if p["section"].lower() == section.lower()]
     if not pages:
+        return None, ""
+    with open(os.path.join(retrieve.CORPUS, pages[0]["file"]), encoding="utf-8") as f:
+        _meta, body = retrieve._front_matter(f.read())   # keeps steps, bullet points and **bold** as written
+    return pages[0], body
+
+
+def help_answer(section):
+    """Answer only from an approved help page. If there is none, say so instead of guessing."""
+    page, body = help_page(section)
+    if not page:
         return reply("I can't find a help page for this, so I won't guess. A person can help.", ["Talk to a person"])
-    text = " ".join(p["text"] for p in pages)
-    return reply(text, ["Start again"], source=pages[0]["source"] + ": " + pages[0]["section"])
+    return reply(body, ["Start again"], source=page["source"] + ": " + page["section"])
 
 
 def choose_need(key):
@@ -44,6 +54,10 @@ def choose_need(key):
     need = NEEDS[key]
     if key == "payment_confirmation":
         return reply("Which payment?", [payment_text(p) for p in PAYMENTS], simulated="payment list is made up")
+    if key == "statement":                              # ask which statement before answering
+        return reply("Sure. Which account is the statement for?", ACCOUNTS, simulated="accounts are made up")
+    if key == "card":
+        return reply("Sorry to hear that. What's happened to your card?", list(CARD_PROBLEMS))
     if need["bot_can_do"]:
         return help_answer(need["help_section"])
     return reply("I'm a bot and I can't help with this (" + need["label"] + "). A person can. Shall I connect you?",
@@ -68,8 +82,7 @@ def hand_over(note):
     """Runs only after the customer confirmed the note."""
     STATE["history"].append("Customer confirmed the note: " + json.dumps(note))
     section = NEEDS[STATE["need"]]["help_section"] if STATE["need"] else ""
-    pages = [p for p in retrieve.load() if p["section"].lower() == section.lower()]
-    waiting = pages[0]["text"] if pages else ""          # help while waiting, from the same help page
+    _page, waiting = help_page(section)                   # help while waiting, from the same help page
     agent_reply = "Hello, I've read your note (" + (note.get("need") or "your request") + "). I'll take it from here"
     if note.get("needed_by"):
         agent_reply += " and make sure it's done by " + note["needed_by"]
@@ -85,7 +98,7 @@ def turn(request):
         return hand_over(request["confirm_note"])
     message = (request.get("message") or "").strip()
     if message == "Start again":
-        STATE["history"].clear(); STATE["need"] = None
+        STATE["history"].clear(); STATE["need"] = None; STATE["account"] = None
         return {"reply": "Hi, I'm the Northgate Bank helper. How may I help you?", "options": [], "reset": True}
     STATE["history"].append("Customer: " + message)
 
@@ -94,7 +107,29 @@ def turn(request):
             return choose_need(key)
     for p in PAYMENTS:                                  # the customer picked a payment
         if message == payment_text(p):
-            return help_answer("Payment confirmations")
+            page, body = help_page("Payment confirmations")
+            return reply("Here's how to get proof of your payment of " + payment_text(p) + ".\n\n" + body,
+                         ["Start again"], source=page["source"] + ": " + page["section"] if page else "")
+    if message in ACCOUNTS:                             # statement: which account?
+        STATE["account"] = message
+        return reply("Which month do you need?", [PAST_MONTH, THIS_MONTH])
+    if message == PAST_MONTH:                           # a finished month is ready now
+        page, body = help_page("Statements")
+        return reply("Your " + (STATE["account"] or "account").lower() + " statement for " + PAST_MONTH +
+                     " is **ready to download now**.\n\n" + body, ["Start again"],
+                     source=page["source"] + ": " + page["section"] if page else "")
+    if message == THIS_MONTH:                           # this month: next working day, so offer the faster option
+        return reply("An up-to-date statement for this month will be ready the **next working day**.\n\n"
+                     "Need proof of one payment **today**? A payment confirmation is ready in the app now.",
+                     [option_text("payment_confirmation"), "Start again"])
+    if message in CARD_PROBLEMS:                        # card: what happened?
+        route = CARD_PROBLEMS[message]
+        if route == "help_page":
+            return help_answer("Cards")
+        if route == "unknown_payment":
+            return choose_need("unknown_payment")
+        return reply("I don't have a help page for a card that isn't working, so I won't guess. "
+                     "A person can help. Shall I connect you?", ["Yes, connect me", "No thanks"])
     if message in ("Yes, connect me", "Talk to a person"):
         return reply("Before I connect you, please check this note. The person will see it first.",
                      note=draft_note(), simulated="the AI note uses a recorded reply")
@@ -105,8 +140,8 @@ def turn(request):
 
     found = understand(message)                         # the customer typed in their own words
     if found:
-        return reply("Did you mean…", [option_text(k) for k in found] + ["Something else"])
-    return reply("I'm not sure what you need. Is it one of these?",
+        return reply("I can help with that. Which one do you need?", [option_text(k) for k in suggestions(found)] + ["Something else"])
+    return reply("Sorry, I'm not sure what you need. Here's what I can help with. Which one is closest?",
                  [option_text(k) for k in NEEDS] + ["Talk to a person"])
 
 

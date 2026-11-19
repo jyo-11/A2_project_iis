@@ -1,13 +1,14 @@
 ---
 source: Northgate Bank Help
 section: Bank letters
-updated: 2026-11-18
+updated: 2026-11-19
 ---
 
-Here are the two types of bank letters we offer:
+We offer two types of bank letter:
 
-- **Balance confirmation letter:** Shows how much money is in your account (often needed for visa applications).
-- **Proof of address letter:** Shows your name and address (often needed for a landlord or to register with a GP).
+- **Balance confirmation letter:** shows how much money is in your account (often needed for visa applications).
+- **Proof of address letter:** shows your name and address (often needed for a landlord or to register with a GP).
 
 **How to request one:**
-I cannot generate bank letters directly. A member of staff will need to request them for you. Once requested, they are ready in about **1–2 working days**.
+
+I can't make bank letters myself. A member of staff will request it for you, and it is ready in about **2 working days**.

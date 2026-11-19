@@ -39,6 +39,12 @@ const chat = document.getElementById('chat'), agent = document.getElementById('a
 function add(cls, text){ const d=document.createElement('div'); d.className=cls; d.textContent=text; chat.appendChild(d); return d; }
 function tag(el, text){ const s=document.createElement('span'); s.className='tag'; s.textContent=text; el.appendChild(s); }
 
+function fmt(text){                           // safe, simple formatting like a real bank chat: **bold**, new lines, bullet points
+  const safe = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return safe.replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^- /gm,'• ').replace(/\n/g,'<br>');
+}
+function addBot(text){ const d=document.createElement('div'); d.className='msg'; d.innerHTML=fmt(text); chat.appendChild(d); return d; }
+
 function showNote(note){                      // the AI's note: read-only until the customer taps Change
   const box = add('note', '');
   const title = document.createElement('b'); title.textContent = 'Note for the agent'; box.appendChild(title);
@@ -78,13 +84,13 @@ function showAgent(a){                        // the agent sees the confirmed no
 
 function render(data){
   if (data.reset) { chat.innerHTML=''; agent.innerHTML='<p class="empty">Nothing yet. The agent only sees something after the customer confirms the note.</p>'; }
-  const m = add('msg', data.reply);
+  const m = addBot(data.reply);
   if (data.simulated) tag(m, data.simulated);
   if (data.source) add('source', 'Source: ' + data.source);
   if (data.note) showNote(data.note);
   if (data.wait) {
     const w = add('wait', 'Wait: ' + data.wait);
-    if (data.while_waiting) { const p=document.createElement('div'); p.textContent='While you wait: ' + data.while_waiting; w.appendChild(p); }
+    if (data.while_waiting) { const p=document.createElement('div'); p.innerHTML='<b>While you wait:</b><br>' + fmt(data.while_waiting); w.appendChild(p); }
   }
   if (data.agent) showAgent(data.agent);
   if ((data.options||[]).length) {

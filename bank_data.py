@@ -4,7 +4,8 @@
 """
 
 # Each need: the bank's name for it, how fast it is, whether the bot can do it,
-# which help page answers it, and the everyday words customers use for it.
+# which help page answers it, the everyday words customers use for it,
+# and related needs to offer as extra options (so the customer always has a real choice).
 NEEDS = {
     "statement": {
         "label": "Statement",
@@ -12,6 +13,7 @@ NEEDS = {
         "bot_can_do": True,
         "help_section": "Statements",
         "words": ["statement", "account history", "transactions", "bank summary", "printout", "list of payments", "list of transfers", "last 3 months", "last 6 months", "last year"],
+        "related": ["payment_confirmation", "balance_letter"],
     },
     "payment_confirmation": {
         "label": "Payment confirmation",
@@ -19,6 +21,7 @@ NEEDS = {
         "bot_can_do": True,
         "help_section": "Payment confirmations",
         "words": ["proof", "receipt", "went through", "confirmation", "transfer", "paid", "sent money", "payment", "transfer"],
+        "related": ["statement", "unknown_payment"],
     },
     "card": {
         "label": "Card help",
@@ -26,6 +29,7 @@ NEEDS = {
         "bot_can_do": True,
         "help_section": "Cards",
         "words": ["card", "lost", "stolen", "pin", "stuck", "broken", "not working", "chip", "contactless","freeze", "cancel", "block", "unblock"],
+        "related": ["unknown_payment"],
     },
     "balance_letter": {
         "label": "Balance confirmation letter",
@@ -33,6 +37,7 @@ NEEDS = {
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["balance", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
+        "related": ["address_letter", "statement"],
     },
     "address_letter": {
         "label": "Proof of address letter",
@@ -40,6 +45,7 @@ NEEDS = {
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["address", "landlord", "gp"],
+        "related": ["balance_letter", "statement"],
     },
     "unknown_payment": {
         "label": "Report a payment I don't recognise",
@@ -47,7 +53,20 @@ NEEDS = {
         "bot_can_do": False,
         "help_section": "Cards",
         "words": ["didn't spend", "don't recognise", "weird charge", "not me", "someone used","dont know this payment", "not my payment", "not my transfer", "not my card", "not my account","I dont know"],
+        "related": ["card", "payment_confirmation"],
     },
+}
+
+# Made-up accounts and months, so the bot can ask which statement the customer needs.
+ACCOUNTS = ["Current account", "Savings account"]
+PAST_MONTH = "October 2026"
+THIS_MONTH = "November 2026 (so far)"
+
+# What can be wrong with a card, and where each answer comes from.
+CARD_PROBLEMS = {
+    "Lost or stolen": "help_page",              # the Cards help page covers this
+    "Not working or stuck": "no_page",          # no help page, so the bot won't guess
+    "Someone used it without me": "unknown_payment",
 }
 
 # Made-up payments, so the bot can look a payment up instead of guessing it.
@@ -59,10 +78,10 @@ PAYMENTS = [
 
 
 def option_text(key):
-    """What the customer sees on an option button, e.g. 'Statement · next working day'."""
+    """What the customer sees on an option button, e.g. 'Statement (next working day)'."""
     need = NEEDS[key]
     if need.get("speed"):                    # an option without a speed just shows its label
-        return need["label"] + " · " + need["speed"]
+        return need["label"] + " (" + need["speed"] + ")"
     return need["label"]
 
 
@@ -74,6 +93,16 @@ def understand(message):
     """Return the needs whose everyday words appear in the message (can be none, one or several)."""
     m = message.lower()
     return [key for key, need in NEEDS.items() if any(w.lower() in m for w in need["words"])]
+
+
+def suggestions(found, most=3):
+    """The needs that matched first, then their related needs, so there are always 2 to 3 real options."""
+    out = list(found)
+    for key in found:
+        for r in NEEDS[key].get("related", []):
+            if r not in out:
+                out.append(r)
+    return out[:max(most, len(found))]
 
 
 if __name__ == "__main__":
