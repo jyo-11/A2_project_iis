@@ -8,35 +8,34 @@
 NEEDS = {
     "statement": {
         "label": "Statement",
-        "speed": "next working day",
+    
         "bot_can_do": True,
         "help_section": "Statements",
-        "words": ["statement", "account history", "transactions", "bank summary", "printout"],
+        "words": ["statement", "account history", "transactions", "bank summary", "printout", "list of payments", "list of transfers", "last 3 months", "last 6 months", "last year"],
     },
     "payment_confirmation": {
         "label": "Payment confirmation",
-        "speed": "in the app now",
         "bot_can_do": True,
         "help_section": "Payment confirmations",
-        "words": ["proof", "receipt", "went through", "confirmation", "transfer", "paid", "sent money"],
+        "words": ["proof", "receipt", "went through", "confirmation", "transfer", "paid", "sent money", "payment", "transfer"],
     },
     "card": {
         "label": "Card help",
-        "speed": "freeze now, new card in about 5 days",
+        
         "bot_can_do": True,
         "help_section": "Cards",
-        "words": ["card", "lost", "stolen", "pin"],
+        "words": ["card", "lost", "stolen", "pin", "stuck", "broken", "not working", "chip", "contactless","freeze", "cancel", "block", "unblock"],
     },
     "balance_letter": {
         "label": "Balance confirmation letter",
-        "speed": "about 2 working days, made by a person",
+        
         "bot_can_do": False,
         "help_section": "Bank letters",
-        "words": ["balance", "visa", "proof of funds", "how much money"],
+        "words": ["balance", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
     },
     "address_letter": {
         "label": "Proof of address letter",
-        "speed": "about 2 working days, made by a person",
+        
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["address", "landlord", "gp"],
@@ -46,14 +45,14 @@ NEEDS = {
         "speed": "a person helps now",
         "bot_can_do": False,
         "help_section": "Cards",
-        "words": ["didn't spend", "don't recognise", "weird charge", "not me", "someone used"],
+        "words": ["didn't spend", "don't recognise", "weird charge", "not me", "someone used","dont know this payment", "not my payment", "not my transfer", "not my card", "not my account","I dont know"],
     },
 }
 
 # Made-up payments, so the bot can look a payment up instead of guessing it.
 PAYMENTS = [
     {"to": "Priya", "amount": "£40", "date": "14 Nov"},
-    {"to": "Corner Shop", "amount": "£12.50", "date": "15 Nov"},
+    {"to": "Supermarket", "amount": "£12.50", "date": "15 Nov"},
     {"to": "Landlord", "amount": "£650", "date": "1 Nov"},
 ]
 

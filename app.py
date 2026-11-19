@@ -86,7 +86,7 @@ def turn(request):
     message = (request.get("message") or "").strip()
     if message == "Start again":
         STATE["history"].clear(); STATE["need"] = None
-        return {"reply": "Hi, I'm the Northgate Bank helper (a bot). What do you need?", "options": [], "reset": True}
+        return {"reply": "Hi, I'm the Northgate Bank helper. How may I help you?", "options": [], "reset": True}
     STATE["history"].append("Customer: " + message)
 
     for key in NEEDS:                                   # the customer clicked an option button
