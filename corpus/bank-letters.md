@@ -4,8 +4,10 @@ section: Bank letters
 updated: 2026-11-18
 ---
 
-A balance confirmation letter shows how much money is in your account. It is often needed for visa applications.
+Here are the two types of bank letters we offer:
 
-A proof of address letter shows your name and address. It is often needed for a landlord or to register with a GP.
+- **Balance confirmation letter:** Shows how much money is in your account (often needed for visa applications).
+- **Proof of address letter:** Shows your name and address (often needed for a landlord or to register with a GP).
 
-The chatbot cannot make bank letters. A member of staff must request them, and they are ready in about 2 working days.
+**How to request one:**
+I cannot generate bank letters directly. A member of staff will need to request them for you. Once requested, they are ready in about **1–2 working days**.
