@@ -1,49 +1,107 @@
 <!doctype html>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Lab 4 prototype</title>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Northgate Bank helper</title>
 <style>
- body{font:16px/1.5 system-ui,Arial,sans-serif;margin:0;display:grid;grid-template-columns:1fr 320px;min-height:100vh}
- main{padding:24px;border-right:1px solid #ddd} aside{padding:24px;background:#f5f7f8}
- .turn{margin:8px 0;padding:10px 14px;border-radius:12px;background:#eef1f3;max-width:80%}
- .me{background:#003b5c;color:#fff;margin-left:auto}
- button{margin:4px 6px 0 0;padding:8px 12px;border:1px solid #00694e;background:#fff;border-radius:18px;cursor:pointer}
- .card{padding:12px;border-radius:10px;background:#d6e8e2;margin-bottom:12px} .note{color:#4a4a4a;font-size:14px}
- .warning{padding:12px;border-left:4px solid #a54100;background:#fff1e8;color:#5c2500}
- input{width:100%;padding:10px;font:inherit;border:1px solid #bbb;border-radius:8px}
- @media(max-width:700px){body{grid-template-columns:1fr}main{border-right:0;border-bottom:1px solid #ddd;padding:16px}aside{padding:16px}input{box-sizing:border-box}}
+ body{font:16px/1.5 system-ui,Arial,sans-serif;margin:0;display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:#f4f2f8}
+ main,aside{padding:20px}
+ aside{background:#fff;border-left:1px solid #ddd}
+ h1,h2{font-size:18px;margin:0 0 12px}
+ .phone{max-width:420px;margin:auto;background:#fff;border:2px solid #ccc;border-radius:24px;padding:16px}
+ .msg{margin:8px 0;padding:10px 14px;border-radius:14px;background:#eeeaf6;max-width:85%}
+ .me{background:#5b3fc4;color:#fff;margin-left:auto}
+ .source{font-size:13px;color:#555;margin:-4px 0 8px}
+ button{margin:4px 6px 0 0;padding:8px 12px;border:1.5px solid #5b3fc4;background:#fff;color:#5b3fc4;border-radius:18px;cursor:pointer;font:inherit;font-size:14px}
+ button.main{background:#5b3fc4;color:#fff}
+ input{width:100%;box-sizing:border-box;padding:10px;font:inherit;border:1px solid #bbb;border-radius:8px}
+ .note{border:2px solid #5b3fc4;border-radius:12px;padding:12px;margin:8px 0;background:#faf8ff}
+ .note label{display:block;font-size:13px;color:#555;margin-top:6px}
+ .wait{background:#fff2dc;border-radius:12px;padding:10px 12px;margin:8px 0}
+ .tag{display:inline-block;font-size:11px;font-weight:bold;color:#8a5200;background:#fff2dc;border:1px dashed #8a5200;border-radius:6px;padding:0 6px;margin-left:6px}
+ .agentnote{border:2px solid #1f8a5b;background:#e3f5ec;border-radius:12px;padding:12px}
+ details{margin-top:12px;color:#555} summary{cursor:pointer}
+ .agentmsg{background:#fff2dc;border-radius:14px;padding:10px 14px;margin-top:12px}
+ .empty{color:#888}
+ @media(max-width:800px){body{grid-template-columns:1fr}aside{border-left:0;border-top:1px solid #ddd}}
 </style>
 <main>
-  <h1>Lab 4 prototype</h1>
-  <div id="transcript"></div>
-  <p><input id="msg" placeholder="Type a message and press Enter" autofocus></p>
+  <div class="phone">
+    <h1>Northgate Bank helper <span class="tag">prototype · made-up bank</span></h1>
+    <div id="chat"></div>
+    <p><input id="msg" placeholder="Type your question and press Enter" autofocus></p>
+  </div>
 </main>
 <aside>
-  <h2>Result</h2>
-  <div id="card"><p class="note">Nothing yet.</p></div>
+  <h2>Agent screen <span class="tag">simulated person</span></h2>
+  <div id="agent"><p class="empty">Nothing yet. The agent only sees something after the customer confirms the note.</p></div>
 </aside>
 <script>
-const t = document.getElementById('transcript'), card = document.getElementById('card');
-function say(text, me){ const d=document.createElement('div'); d.className='turn'+(me?' me':''); d.textContent=text; t.appendChild(d); }
-function render(data){                       // the fields, drawn — not the reply, printed
-  card.innerHTML = '';
-  if (data.action) { const c=document.createElement('div'); c.className='card';
-    c.textContent = data.action.clinic + ' · ' + data.action.date + ' ' + (data.action.time||''); card.appendChild(c); }
-  if (data.stale_warning) { const w=document.createElement('p'); w.className='warning';
-    w.setAttribute('role','alert'); w.textContent=data.stale_warning; card.appendChild(w); }
-  if (data.recovery_notice) { const w=document.createElement('p'); w.className='warning';
-    w.setAttribute('role','alert'); w.textContent=data.recovery_notice; card.appendChild(w); }
-  (data.options||[]).forEach(o => { const b=document.createElement('button'); b.textContent=o;
-    b.onclick = () => send(o); card.appendChild(b); });
-  const n=document.createElement('p'); n.className='note';
-  n.textContent = (data.unsupported_claims||[]).length ? 'Not checked: ' + data.unsupported_claims.join(', ') : 'Nothing unsupported was claimed.';
-  card.appendChild(n);
+const chat = document.getElementById('chat'), agent = document.getElementById('agent');
+
+function add(cls, text){ const d=document.createElement('div'); d.className=cls; d.textContent=text; chat.appendChild(d); return d; }
+function tag(el, text){ const s=document.createElement('span'); s.className='tag'; s.textContent=text; el.appendChild(s); }
+
+function showNote(note){                      // the AI's note: read-only until the customer taps Change
+  const box = add('note', '');
+  const title = document.createElement('b'); title.textContent = 'Note for the agent'; box.appendChild(title);
+  tag(box, 'AI draft, recorded reply');
+  if (note.problem) { const p=document.createElement('p'); p.textContent=note.problem; box.appendChild(p); }
+  const fields = [['need','I think you need'], ['for','For'], ['needed_by','Needed by']];
+  const inputs = {};
+  fields.forEach(([key, label]) => {
+    const l=document.createElement('label'); l.textContent=label; box.appendChild(l);
+    const i=document.createElement('input'); i.value=note[key]||''; i.readOnly=!note.problem; box.appendChild(i); inputs[key]=i;
+  });
+  const q=document.createElement('p'); q.textContent='Is this right?'; box.appendChild(q);
+  const yes=document.createElement('button'); yes.className='main'; yes.textContent='Yes, send it';
+  const change=document.createElement('button'); change.textContent='Change';
+  change.onclick = () => { Object.values(inputs).forEach(i => i.readOnly=false); inputs.need.focus(); };
+  yes.onclick = () => {
+    const edited = {}; Object.keys(inputs).forEach(k => edited[k]=inputs[k].value);
+    yes.disabled = change.disabled = true;
+    send({confirm_note: edited}, 'Note confirmed');
+  };
+  box.appendChild(yes); box.appendChild(change);
 }
-async function send(text){
-  say(text, true);
-  const r = await fetch('/', {method:'POST', body: JSON.stringify({message:text})});
-  const data = await r.json();
-  say(data.reply); render(data);
+
+function showAgent(a){                        // the agent sees the confirmed note first, the earlier chat folded
+  agent.innerHTML = '';
+  const n=document.createElement('div'); n.className='agentnote';
+  n.innerHTML = '<b>Customer\'s confirmed note</b>';
+  [['I need', a.note.need], ['For', a.note.for], ['Needed by', a.note.needed_by]].forEach(([l, v]) => {
+    const p=document.createElement('div'); p.textContent = l + ': ' + (v || '(not given)'); n.appendChild(p); });
+  agent.appendChild(n);
+  const d=document.createElement('details'); const s=document.createElement('summary');
+  s.textContent='Earlier chat (' + a.earlier_chat.length + ' messages)'; d.appendChild(s);
+  a.earlier_chat.forEach(line => { const p=document.createElement('div'); p.textContent=line; d.appendChild(p); });
+  agent.appendChild(d);
+  const r=document.createElement('div'); r.className='agentmsg'; r.textContent='Agent: ' + a.reply; tag(r, 'simulated'); agent.appendChild(r);
 }
+
+function render(data){
+  if (data.reset) { chat.innerHTML=''; agent.innerHTML='<p class="empty">Nothing yet. The agent only sees something after the customer confirms the note.</p>'; }
+  const m = add('msg', data.reply);
+  if (data.simulated) tag(m, data.simulated);
+  if (data.source) add('source', 'Source: ' + data.source);
+  if (data.note) showNote(data.note);
+  if (data.wait) {
+    const w = add('wait', 'Wait: ' + data.wait);
+    if (data.while_waiting) { const p=document.createElement('div'); p.textContent='While you wait: ' + data.while_waiting; w.appendChild(p); }
+  }
+  if (data.agent) showAgent(data.agent);
+  if ((data.options||[]).length) {
+    const box = document.createElement('div'); chat.appendChild(box);
+    data.options.forEach(o => { const b=document.createElement('button'); b.textContent=o; b.onclick=() => send({message:o}, o); box.appendChild(b); });
+  }
+}
+
+async function send(request, shown){
+  if (shown) add('msg me', shown);
+  const r = await fetch('/', {method:'POST', body: JSON.stringify(request)});
+  render(await r.json());
+  window.scrollTo(0, document.body.scrollHeight);
+}
+
 document.getElementById('msg').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.target.value.trim()) { const v=e.target.value; e.target.value=''; send(v); }
+  if (e.key === 'Enter' && e.target.value.trim()) { const v=e.target.value; e.target.value=''; send({message:v}, v); }
 });
+send({message:'Start again'});
 </script>

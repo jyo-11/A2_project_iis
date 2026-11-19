@@ -129,7 +129,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
-    port = 8000
+    port = 8001
     if "--port" in sys.argv:
         port = int(sys.argv[sys.argv.index("--port") + 1])
     print("serving on http://localhost:%d" % port)
