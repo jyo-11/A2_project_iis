@@ -24,6 +24,8 @@ def _pick(text):
             return "note_visa.json"
         if "address" in t or "landlord" in t:
             return "note_address.json"
+        if "can't see the payment" in t:
+            return "note_missing.json"
         if "recognise" in t:
             return "note_unknown.json"
         if "not working" in t:

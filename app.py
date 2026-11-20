@@ -5,7 +5,7 @@
 Path A: the bot understands everyday words, offers options and answers from a help page.
 Path B: if the bot cannot do it, it drafts a note, the customer checks it, then a (simulated) person takes over.
 """
-import json, os, sys
+import json, os, re, sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 import model, retrieve
@@ -13,6 +13,12 @@ from bank_data import (NEEDS, PAYMENTS, ACCOUNTS, PAST_MONTH, THIS_MONTH, CARD_P
                        option_text, payment_text, understand, suggestions)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+
+# Small talk: messages made only of these words get a friendly reply instead of the menu.
+GREETING_WORDS = {"hi", "hello", "hey", "hiya", "heya", "good", "morning", "afternoon", "evening", "there", "bot", "helper"}
+THANKS_WORDS = {"thanks", "thank", "you", "so", "much", "cheers", "ok", "okay", "great"}
+NONE_OF_THESE = "None of these"
+NONE_WORDS = {"none", "none of these", "none of them", "not there", "not listed", "it's not there", "its not there"}
 
 # One conversation at a time is enough for a prototype.
 STATE = {"history": [], "need": None, "account": None}
@@ -53,7 +59,7 @@ def choose_need(key):
     STATE["need"] = key
     need = NEEDS[key]
     if key == "payment_confirmation":
-        return reply("Which payment?", [payment_text(p) for p in PAYMENTS], simulated="payment list is made up")
+        return reply("Which payment?", [payment_text(p) for p in PAYMENTS] + [NONE_OF_THESE], simulated="payment list is made up")
     if key == "statement":                              # ask which statement before answering
         return reply("Sure. Which account is the statement for?", ACCOUNTS, simulated="accounts are made up")
     if key == "card":
@@ -101,6 +107,18 @@ def turn(request):
         STATE["history"].clear(); STATE["need"] = None; STATE["account"] = None
         return {"reply": "Hi, I'm the Northgate Bank helper. How may I help you?", "options": [], "reset": True}
     STATE["history"].append("Customer: " + message)
+
+    words = re.sub(r"[^a-z' ]", " ", message.lower()).split()
+    if words and all(w in GREETING_WORDS for w in words):          # just "hi", "hello there", "good morning"...
+        return reply("Hello! 👋 I'm the Northgate Bank helper. I can help with statements, payment confirmations, "
+                     "card problems and bank letters. What do you need today?",
+                     [option_text(k) for k in ("statement", "payment_confirmation", "card", "balance_letter")]
+                     + ["Something else"])
+    if words and all(w in THANKS_WORDS for w in words):            # "thanks", "thank you so much"...
+        return reply("You're welcome! Is there anything else I can help with?", ["Start again"])
+    if STATE["need"] == "payment_confirmation" and (message == NONE_OF_THESE or " ".join(words) in NONE_WORDS):
+        return reply("No problem. If you can't see the payment, a person can look into it for you. Shall I connect you?",
+                     ["Yes, connect me", "No thanks"])
 
     for key in NEEDS:                                   # the customer clicked an option button
         if message == option_text(key):
