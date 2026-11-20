@@ -1,7 +1,7 @@
 ---
 source: Northgate Bank Help
 section: Bank letters
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 We offer two types of bank letter:
@@ -11,4 +11,7 @@ We offer two types of bank letter:
 
 **How to request one:**
 
-I can't make bank letters myself. A member of staff will request it for you, and it is ready in about **2 working days**.
+I can't make bank letters myself. A member of staff will make it for you:
+
+- **Balance confirmation letter:** usually ready the **same working day**.
+- **Proof of address letter:** ready in about **2 working days**.

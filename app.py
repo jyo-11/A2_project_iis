@@ -167,5 +167,11 @@ if __name__ == "__main__":
     port = 8001
     if "--port" in sys.argv:
         port = int(sys.argv[sys.argv.index("--port") + 1])
+    HTTPServer.allow_reuse_address = False   # on Windows, stops a second copy silently sharing the port
+    try:
+        server = HTTPServer(("localhost", port), Handler)
+    except OSError:
+        sys.exit("Port %d is already in use: the chatbot is probably running in another terminal. "
+                 "Stop that one first (Ctrl + C there), or use: python app.py --port %d" % (port, port + 1))
     print("serving on http://localhost:%d" % port)
-    HTTPServer(("localhost", port), Handler).serve_forever()
+    server.serve_forever()

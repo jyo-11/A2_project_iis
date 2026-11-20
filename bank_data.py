@@ -33,7 +33,7 @@ NEEDS = {
     },
     "balance_letter": {
         "label": "Balance confirmation letter",
-        "speed": "about 2 working days, made by a person",
+        "speed": "same working day, made by a person",
         "bot_can_do": False,
         "help_section": "Bank letters",
         "words": ["balance", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
