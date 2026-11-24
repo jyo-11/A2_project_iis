@@ -160,7 +160,11 @@ def turn(request):
 
     found = understand(message)                         # the customer typed in their own words
     if found:
-        return reply("I can help with that. Which one do you need?", [option_text(k) for k in suggestions(found)] + ["Something else"])
+        options = [option_text(k) for k in suggestions(found)] + ["Something else"]
+        if len(found) == 1:                             # one clear match: say what the bot thinks, so the customer can confirm
+            return reply("I think you're asking about **" + NEEDS[found[0]]["label"] + "**. Tap it to carry on, "
+                         "or pick another option if that's not quite right.", options)
+        return reply("I found a few things that could match. Which one do you need?", options)
     return reply("Sorry, I'm not sure what you need. Here's what I can help with. Which one is closest?",
                  [option_text(k) for k in NEEDS] + ["Talk to a person"])
 
