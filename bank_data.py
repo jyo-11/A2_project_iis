@@ -9,7 +9,7 @@
 NEEDS = {
     "statement": {
         "label": "Statement",
-        "speed": "next working day",
+        "speed": "past months ready now",
         "bot_can_do": True,
         "help_section": "Statements",
         "words": ["statement", "account history", "transactions", "bank summary", "printout", "list of payments", "list of transfers", "last 3 months", "last 6 months", "last year"],

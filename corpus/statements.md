@@ -1,7 +1,7 @@
 ---
 source: Northgate Bank Help
 section: Statements
-updated: 2026-11-19
+updated: 2026-11-20
 ---
 
 A **statement** is a list of every payment in and out of your account over one month.
@@ -12,4 +12,4 @@ A **statement** is a list of every payment in and out of your account over one m
 2. Tap **Statements**.
 3. Choose the month and tap **Download**.
 
-A new, up-to-date statement is ready the **next working day**.
+Statements for **past months** are ready **straight away**. An **up-to-date** statement for this month (up to today) is ready the **next working day**.

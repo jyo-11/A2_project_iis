@@ -117,7 +117,9 @@ def turn(request):
     if words and all(w in THANKS_WORDS for w in words):            # "thanks", "thank you so much"...
         return reply("You're welcome! Is there anything else I can help with?", ["Start again"])
     if STATE["need"] == "payment_confirmation" and (message == NONE_OF_THESE or " ".join(words) in NONE_WORDS):
-        return reply("No problem. If you can't see the payment, a person can look into it for you. Shall I connect you?",
+        return reply("If you can't see the payment yet, it may still be on its way. Payments to other banks usually show "
+                     "within minutes, but some can take **up to 24 hours**, and I can only share a confirmation once it shows.\n\n"
+                     "Need proof **sooner**, for example because someone is waiting for it? A person can help.",
                      ["Yes, connect me", "No thanks"])
 
     for key in NEEDS:                                   # the customer clicked an option button
@@ -138,7 +140,7 @@ def turn(request):
                      source=page["source"] + ": " + page["section"] if page else "")
     if message == THIS_MONTH:                           # this month: next working day, so offer the faster option
         return reply("An up-to-date statement for this month will be ready the **next working day**.\n\n"
-                     "Need proof of one payment **today**? A payment confirmation is ready in the app now.",
+                     "Need proof of one payment **today**? A payment confirmation is ready in the app as soon as the payment shows.",
                      [option_text("payment_confirmation"), "Start again"])
     if message in CARD_PROBLEMS:                        # card: what happened?
         route = CARD_PROBLEMS[message]
