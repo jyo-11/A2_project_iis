@@ -79,11 +79,11 @@ $env:IIS_MODEL="http"; $env:IIS_MODEL_URL="<endpoint>"; $env:IIS_API_KEY="<your 
 
 ## Original and reused work
 
-I reused `retrieve.py`, `model.py`, `tools.py` and `vlm.py` unchanged from the module's Lab 4 pack.
+I reused `retrieve.py` and `model.py` unchanged from the module's Lab 4 pack.
 
-I added the note replies to `mock_model.py` and reused the web-server pattern in `app.py`.
+I added the note replies to `mock_model.py` (the files `recorded_runs/note_*.json` are mine; the other recorded replies are from Lab 4) and reused the web-server pattern in `app.py`.
 
-The original Lab 4 README is in `reference/LAB4_README.md`.
+The Lab 4 files my chatbot does not use (handouts, `tools.py`, `vlm.py`, sample images and the original Lab 4 README) are kept unchanged in `reference/lab4/`.
 
 My own work includes the bank help pages, `bank_data.py`, the two-path dialogue in `app.py`, the chat page, the recorded AI notes, testing and the design.
 
@@ -94,6 +94,8 @@ My own work includes the bank help pages, `bank_data.py`, the two-path dialogue 
 I started from the Lab 4 prototype unchanged, so my own changes are easy to see:
 
 https://github.com/jyo-11/A2_project_iis/commit/611928f
+
+At the end, I moved the Lab 4 files my chatbot does not use into `reference/lab4/`, so the main folder shows only this project.
 
 I replaced the course documents with bank help pages, then split payment confirmation and bank letters into separate pages:
 
@@ -171,6 +173,6 @@ I found that if the customer sends the note without reading it, the agent still 
 | `docs/1.png`–`5.png` | Storyboard pages used in the report (Figures 2 to 4). |
 | `docs/A1.png`–`A4.png`, `B1.png`–`B5.png` | Screenshots of Path A and Path B used in the storyboards. |
 | `docs/system-diagram.drawio` / `.png` | System diagram. Open the `.drawio` file at app.diagrams.net. |
-| `reference/` | Original Lab 4 files, including the Lab 4 README. |
+| `reference/lab4/` | Unused Lab 4 files, kept unchanged, including the Lab 4 README. |
 
 No ZIP is needed.
