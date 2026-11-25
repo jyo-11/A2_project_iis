@@ -69,6 +69,14 @@ Expected output:
 11 of 12 phrases reached the right need
 ```
 
+### Check what happens if the AI note comes back broken
+
+```powershell
+$env:IIS_MOCK_BREAK="1"; python app.py
+```
+
+The bot does not pass the broken note on. It says "I couldn't draft the note. Please fill it in." and the customer writes it.
+
 ### Live model configuration
 
 No keys are stored. To try a live model, set your own values in the terminal, never in a file. In Windows PowerShell:
@@ -81,9 +89,9 @@ $env:IIS_MODEL="http"; $env:IIS_MODEL_URL="<endpoint>"; $env:IIS_API_KEY="<your 
 
 I reused `retrieve.py` and `model.py` unchanged from the module's Lab 4 pack.
 
-I added the note replies to `mock_model.py` (the files `recorded_runs/note_*.json` are mine; the other recorded replies are from Lab 4) and reused the web-server pattern in `app.py`.
+I changed `mock_model.py` so it returns my recorded notes (`recorded_runs/note_*.json`); `malformed.txt` is from Lab 4. I also reused the web-server pattern in `app.py`.
 
-The Lab 4 files my chatbot does not use (handouts, `tools.py`, `vlm.py`, sample images and the original Lab 4 README) are kept unchanged in `reference/lab4/`.
+The original, unchanged Lab 4 pack can be seen in commit [611928f](https://github.com/jyo-11/A2_project_iis/commit/611928f).
 
 My own work includes the bank help pages, `bank_data.py`, the two-path dialogue in `app.py`, the chat page, the recorded AI notes, testing and the design.
 
@@ -95,7 +103,7 @@ I started from the Lab 4 prototype unchanged, so my own changes are easy to see:
 
 https://github.com/jyo-11/A2_project_iis/commit/611928f
 
-At the end, I moved the Lab 4 files my chatbot does not use into `reference/lab4/`, so the main folder shows only this project.
+At the end, I removed the Lab 4 files my chatbot does not use (handouts, `tools.py`, `vlm.py`, sample images and old recorded replies), so the repository shows only this project.
 
 I replaced the course documents with bank help pages, then split payment confirmation and bank letters into separate pages:
 
@@ -173,6 +181,5 @@ I found that if the customer sends the note without reading it, the agent still 
 | `docs/1.png`–`5.png` | Storyboard pages used in the report (Figures 2 to 4). |
 | `docs/A1.png`–`A4.png`, `B1.png`–`B5.png` | Screenshots of Path A and Path B used in the storyboards. |
 | `docs/system-diagram.drawio` / `.png` | System diagram. Open the `.drawio` file at app.diagrams.net. |
-| `reference/lab4/` | Unused Lab 4 files, kept unchanged, including the Lab 4 README. |
 
 No ZIP is needed.
