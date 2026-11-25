@@ -1,4 +1,4 @@
-README prose word count: about 1246 (code, commands and links not counted)
+
 
 # Northgate Bank helper
 
