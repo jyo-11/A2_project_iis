@@ -12,4 +12,6 @@ A **statement** is a list of every payment in and out of your account over one m
 2. Tap **Statements**.
 3. Choose the month and tap **Download**.
 
-Statements for **past months** are ready **straight away**. An **up-to-date** statement for this month (up to today) is ready the **next working day**.
+Statements are ready to download **straight away**, for past months and for this month up to today.
+
+**By email:** we email you when each new monthly statement is ready. For your security, the statement itself stays in the app and online banking, so log in to view or download it.

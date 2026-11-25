@@ -9,7 +9,7 @@
 NEEDS = {
     "statement": {
         "label": "Statement",
-        "speed": "past months ready now",
+        "speed": "ready to download now",
         "bot_can_do": True,
         "help_section": "Statements",
         "words": ["statement", "account history", "transactions", "bank summary", "printout", "list of payments", "list of transfers", "last 3 months", "last 6 months", "last year"],
@@ -36,7 +36,7 @@ NEEDS = {
         "speed": "same working day, made by a person",
         "bot_can_do": False,
         "help_section": "Bank letters",
-        "words": ["balance", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
+        "words": ["balance", "letter", "visa", "proof of funds", "how much money","hoe much left", "how much is in my account", "visa application", "visa letter", "visa proof"],
         "related": ["address_letter", "statement"],
     },
     "address_letter": {
@@ -44,7 +44,7 @@ NEEDS = {
         "speed": "about 2 working days, made by a person",
         "bot_can_do": False,
         "help_section": "Bank letters",
-        "words": ["address", "landlord", "gp"],
+        "words": ["address", "letter", "landlord", "gp"],
         "related": ["balance_letter", "statement"],
     },
     "unknown_payment": {
@@ -78,7 +78,7 @@ PAYMENTS = [
 
 
 def option_text(key):
-    """What the customer sees on an option button, e.g. 'Statement (next working day)'."""
+    """What the customer sees on an option button, e.g. 'Statement (ready to download now)'."""
     need = NEEDS[key]
     if need.get("speed"):                    # an option without a speed just shows its label
         return need["label"] + " (" + need["speed"] + ")"
@@ -92,7 +92,11 @@ def payment_text(p):
 def understand(message):
     """Return the needs whose everyday words appear in the message (can be none, one or several)."""
     m = message.lower()
-    return [key for key, need in NEEDS.items() if any(w.lower() in m for w in need["words"])]
+    GENERIC = {"letter"}                     # a vague word: only used if nothing more specific matches
+    specific = [key for key, need in NEEDS.items() if any(w.lower() in m for w in need["words"] if w not in GENERIC)]
+    if specific:
+        return specific
+    return [key for key, need in NEEDS.items() if any(w in m for w in need["words"] if w in GENERIC)]
 
 
 def suggestions(found, most=3):

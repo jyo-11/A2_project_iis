@@ -87,6 +87,7 @@ function render(data){
   const m = addBot(data.reply);
   if (data.simulated) tag(m, data.simulated);
   if (data.source) add('source', 'Source: ' + data.source);
+  if (data.followup) addBot(data.followup);
   if (data.note) showNote(data.note);
   if (data.wait) {
     const w = add('wait', 'Wait: ' + data.wait);

@@ -18,6 +18,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 GREETING_WORDS = {"hi", "hello", "hey", "hiya", "heya", "good", "morning", "afternoon", "evening", "there", "bot", "helper"}
 THANKS_WORDS = {"thanks", "thank", "you", "so", "much", "cheers", "ok", "okay", "great"}
 NONE_OF_THESE = "None of these"
+CHECK = "Did this answer your question?"            # asked after every help-page answer
+ANSWERED = ["Yes, thanks", "No, I need more help"]
+ANYTHING_ELSE = ["Something else", "No, that's all"]
 NONE_WORDS = {"none", "none of these", "none of them", "not there", "not listed", "it's not there", "its not there"}
 
 # One conversation at a time is enough for a prototype.
@@ -51,7 +54,7 @@ def help_answer(section):
     page, body = help_page(section)
     if not page:
         return reply("I can't find a help page for this, so I won't guess. A person can help.", ["Talk to a person"])
-    return reply(body, ["Start again"], source=page["source"] + ": " + page["section"])
+    return reply(body, ANSWERED, source=page["source"] + ": " + page["section"], followup=CHECK)
 
 
 def choose_need(key):
@@ -115,7 +118,7 @@ def turn(request):
                      [option_text(k) for k in ("statement", "payment_confirmation", "card", "balance_letter")]
                      + ["Something else"])
     if words and all(w in THANKS_WORDS for w in words):            # "thanks", "thank you so much"...
-        return reply("You're welcome! Is there anything else I can help with?", ["Start again"])
+        return reply("You're welcome! Is there anything else I can help with?", ANYTHING_ELSE)
     if STATE["need"] == "payment_confirmation" and (message == NONE_OF_THESE or " ".join(words) in NONE_WORDS):
         return reply("If you can't see the payment yet, it may still be on its way. Payments to other banks usually show "
                      "within minutes, but some can take **up to 24 hours**, and I can only share a confirmation once it shows.\n\n"
@@ -129,19 +132,15 @@ def turn(request):
         if message == payment_text(p):
             page, body = help_page("Payment confirmations")
             return reply("Here's how to get proof of your payment of " + payment_text(p) + ".\n\n" + body,
-                         ["Start again"], source=page["source"] + ": " + page["section"] if page else "")
+                         ANSWERED, source=page["source"] + ": " + page["section"] if page else "", followup=CHECK)
     if message in ACCOUNTS:                             # statement: which account?
         STATE["account"] = message
         return reply("Which month do you need?", [PAST_MONTH, THIS_MONTH])
-    if message == PAST_MONTH:                           # a finished month is ready now
+    if message in (PAST_MONTH, THIS_MONTH):             # any month, including this month so far, is ready now
         page, body = help_page("Statements")
-        return reply("Your " + (STATE["account"] or "account").lower() + " statement for " + PAST_MONTH +
-                     " is **ready to download now**.\n\n" + body, ["Start again"],
-                     source=page["source"] + ": " + page["section"] if page else "")
-    if message == THIS_MONTH:                           # this month: next working day, so offer the faster option
-        return reply("An up-to-date statement for this month will be ready the **next working day**.\n\n"
-                     "Need proof of one payment **today**? A payment confirmation is ready in the app as soon as the payment shows.",
-                     [option_text("payment_confirmation"), "Start again"])
+        return reply("Your " + (STATE["account"] or "account").lower() + " statement for " + message +
+                     " is **ready to download now**.\n\n" + body, ANSWERED,
+                     source=page["source"] + ": " + page["section"] if page else "", followup=CHECK)
     if message in CARD_PROBLEMS:                        # card: what happened?
         route = CARD_PROBLEMS[message]
         if route == "help_page":
@@ -154,7 +153,13 @@ def turn(request):
         return reply("Before I connect you, please check this note. The person will see it first.",
                      note=draft_note(), simulated="the AI note uses a recorded reply")
     if message == "No thanks":
-        return reply("OK. Is there anything else?", ["Start again"])
+        return reply("OK. Is there anything else I can help with?", ANYTHING_ELSE)
+    if message == "Yes, thanks":                        # the answer helped
+        return reply("Great! Is there anything else I can help with?", ANYTHING_ELSE)
+    if message == "No, I need more help":               # the answer did not help: offer a person (Path B)
+        return reply("Sorry that didn't help. A person can. Shall I connect you?", ["Yes, connect me", "No thanks"])
+    if message == "No, that's all":                     # end of the chat
+        return reply("Thanks for chatting with Northgate Bank. Have a lovely day! 👋", ["Start again"])
     if message == "Something else":
         return reply("Tell me in a few words, or talk to a person.", ["Talk to a person"])
 
