@@ -49,7 +49,6 @@ Then open:
 
 http://localhost:8001
 
-I use port 8001 because port 8000 was used by another program on my laptop.
 
 To use another port:
 
