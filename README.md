@@ -1,4 +1,4 @@
-README prose word count: about 1,170 (code, commands and links not counted)
+README prose word count: about 1242 (code, commands and links not counted)
 
 # Northgate Bank helper
 
@@ -67,6 +67,12 @@ Expected output:
 
 ```text
 11 of 12 phrases reached the right need
+```
+
+### Run all the scripted tests
+
+```bash
+python test_chat.py          # add --save to rewrite docs/test_record.md
 ```
 
 ### Check what happens if the AI note comes back broken
@@ -165,7 +171,9 @@ https://github.com/jyo-11/A2_project_iis/commit/b556c00
 
 The phrase test reached 11 of 12 phrases. Only "a payment I never made" reached the wrong need.
 
-I also tested Path A, Path B and unclear requests by hand in the browser, starting a new chat each time. I took screenshots of each run; these are the screenshots in `docs/` and in Figures 3 and 4 of the report.
+I tested Path A, Path B and unclear requests by hand in the browser, starting a new chat each time, and took screenshots of each run (the screenshots in `docs/`, used in Figures 3 and 4 of the report).
+
+I then replayed the same conversations as scripted tests in `test_chat.py`. Results are in [docs/test_record.md](docs/test_record.md): 13 of 13 passed, and one test (T11) shows the known limit below.
 
 I found that if the customer sends the note without reading it, the agent still gets the wrong need. The handover is therefore only as accurate as the customer's check.
 
@@ -173,6 +181,7 @@ I found that if the customer sends the note without reading it, the agent still 
 
 - **Claude (in Antigravity and Claude Code), prototype:** helped write most of the code and the structure of the prototype from my design: the two paths, the customer check and the recorded notes. I ran every path by hand in the browser. My own testing found gaps ("hi" showed the whole menu, a missing payment had no way forward, one "Did you mean…?" option gave no real choice), and I decided how each should be fixed (see Development record, section 4).
 - **Claude, system diagram:** I gave it the structure (the parts, the two paths, and which parts are implemented, simulated or planned) and it drew the diagram in draw.io.
+- **Claude, tests:** it turned my test list (the conversations I had tested by hand) into the script `test_chat.py`. I ran it and checked the results matched what I had seen in the browser.
 - **Claude, report and README:** it checked my report against the brief and listed what was missing, and it drafted this README from my commits. I decided what to change and checked the facts against my code.
 - **ChatGPT:** generated the drawings for Figure 2 (the problem I experienced). The storyboard idea, scenes and captions are mine. It also polished the wording of this README.
 - **No AI:** Figures 3 and 4 are screenshots of my own test runs, which I laid out in Canva myself.
@@ -183,6 +192,7 @@ I found that if the customer sends the note without reading it, the agent still 
 |---|---|
 | `docs/1.png`–`5.png` | Storyboard pages used in the report (Figures 2 to 4), laid out in Canva. |
 | `docs/A1.png`–`A4.png`, `B1.png`–`B5.png` | Screenshots of Path A and Path B used in the storyboards. |
+| `test_chat.py`, `docs/test_record.md` | Scripted tests and their results. |
 | `docs/system-diagram.drawio` / `.png` | System diagram. Open the `.drawio` file at app.diagrams.net. |
 
 No ZIP is needed.
