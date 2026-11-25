@@ -1,4 +1,4 @@
-README prose word count: about 1282 (code, commands and links not counted)
+README prose word count: about 1246 (code, commands and links not counted)
 
 # Northgate Bank helper
 
@@ -177,14 +177,21 @@ My full test record is in [docs/test_record.md](docs/test_record.md): 17 convers
 
 I found that if the customer sends the note without reading it, the agent still gets the wrong need. The handover is therefore only as accurate as the customer's check.
 
-## AI assistance
+## My work and AI assistance
 
-- **Claude (in Antigravity and Claude Code), prototype:** helped write most of the code and the structure of the prototype from my design: the two paths, the customer check and the recorded notes. I ran every path by hand in the browser. My own testing found gaps ("hi" showed the whole menu, a missing payment had no way forward, one "Did you mean…?" option gave no real choice), and I decided how each should be fixed (see Development record, section 4).
-- **Claude, system diagram:** I gave it the structure (the parts, the two paths, and which parts are implemented, simulated or planned) and it drew the diagram in draw.io.
-- **Claude, tests:** it turned my test list (the conversations I had tested by hand) into the script `test_chat.py`. I ran it and checked the results matched what I had seen in the browser.
-- **Claude, report and README:** it checked my report against the brief and listed what was missing, suggested simpler wording for the testing section, and drafted this README from my commits. I decided what to change, edited the wording and checked the facts against my code.
-- **ChatGPT:** generated the drawings for Figure 2 (the problem I experienced). The storyboard idea, scenes and captions are mine. It also polished the wording of this README.
-- **No AI:** Figures 3 and 4 are screenshots of my own test runs, which I laid out in Canva myself.
+**What I did myself**
+
+- The idea and the problem, from my own experience with a UK bank's chatbot and my Assignment 1 literature review.
+- The design: the two paths (fix in the chat or hand over), the customer check on the agent note, and what is simulated and why.
+- All the testing: I tested every path by hand, found the gaps and decided every fix in the Development record.
+- The report, which I wrote.
+- The storyboards: the idea, scenes and captions, and Figures 3 and 4 laid out in Canva from screenshots of my own test runs.
+- The structure of the system diagram: the parts, the flows, and what is implemented, simulated or planned.
+
+**Where I used AI**
+
+- **Claude (in Antigravity and Claude Code):** helped me write the prototype's code from my design, drew my diagram structure in draw.io, turned my hand tests into a replay script, and checked my report and README against the brief. I ran and tested everything myself and checked every fact against my code.
+- **ChatGPT:** generated the Figure 2 drawings from my storyboard, and polished the wording of this README.
 
 ## Additional files
 
