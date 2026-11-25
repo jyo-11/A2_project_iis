@@ -1,4 +1,4 @@
-README prose word count: about 1242 (code, commands and links not counted)
+README prose word count: about 1282 (code, commands and links not counted)
 
 # Northgate Bank helper
 
@@ -72,7 +72,7 @@ Expected output:
 ### Run all the scripted tests
 
 ```bash
-python test_chat.py          # add --save to rewrite docs/test_record.md
+python test_chat.py          # add --save to write docs/test_script_results.md
 ```
 
 ### Check what happens if the AI note comes back broken
@@ -173,7 +173,7 @@ The phrase test reached 11 of 12 phrases. Only "a payment I never made" reached 
 
 I tested Path A, Path B and unclear requests by hand in the browser, starting a new chat each time, and took screenshots of each run (the screenshots in `docs/`, used in Figures 3 and 4 of the report).
 
-I then replayed the same conversations as scripted tests in `test_chat.py`. Results are in [docs/test_record.md](docs/test_record.md): 13 of 13 passed, and one test (T11) shows the known limit below.
+My full test record is in [docs/test_record.md](docs/test_record.md): 17 conversations (Path A, Path B and unclear requests), what testing changed, and the limits. After my last changes, I replayed the same conversations through the final code with `test_chat.py`: 16 of 16 passed, and one shows the known limit below ([docs/test_script_results.md](docs/test_script_results.md)).
 
 I found that if the customer sends the note without reading it, the agent still gets the wrong need. The handover is therefore only as accurate as the customer's check.
 
@@ -192,7 +192,8 @@ I found that if the customer sends the note without reading it, the agent still 
 |---|---|
 | `docs/1.png`–`5.png` | Storyboard pages used in the report (Figures 2 to 4), laid out in Canva. |
 | `docs/A1.png`–`A4.png`, `B1.png`–`B5.png` | Screenshots of Path A and Path B used in the storyboards. |
-| `test_chat.py`, `docs/test_record.md` | Scripted tests and their results. |
+| `docs/test_record.md` | My test record: what I tested, what happened, what it changed. |
+| `test_chat.py`, `docs/test_script_results.md` | Script that replays the tests on the final code, and its results. |
 | `docs/system-diagram.drawio` / `.png` | System diagram. Open the `.drawio` file at app.diagrams.net. |
 
 No ZIP is needed.
