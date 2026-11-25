@@ -182,7 +182,7 @@ I found that if the customer sends the note without reading it, the agent still 
 - **Claude (in Antigravity and Claude Code), prototype:** helped write most of the code and the structure of the prototype from my design: the two paths, the customer check and the recorded notes. I ran every path by hand in the browser. My own testing found gaps ("hi" showed the whole menu, a missing payment had no way forward, one "Did you mean…?" option gave no real choice), and I decided how each should be fixed (see Development record, section 4).
 - **Claude, system diagram:** I gave it the structure (the parts, the two paths, and which parts are implemented, simulated or planned) and it drew the diagram in draw.io.
 - **Claude, tests:** it turned my test list (the conversations I had tested by hand) into the script `test_chat.py`. I ran it and checked the results matched what I had seen in the browser.
-- **Claude, report and README:** it checked my report against the brief and listed what was missing, and it drafted this README from my commits. I decided what to change and checked the facts against my code.
+- **Claude, report and README:** it checked my report against the brief and listed what was missing, suggested simpler wording for the testing section, and drafted this README from my commits. I decided what to change, edited the wording and checked the facts against my code.
 - **ChatGPT:** generated the drawings for Figure 2 (the problem I experienced). The storyboard idea, scenes and captions are mine. It also polished the wording of this README.
 - **No AI:** Figures 3 and 4 are screenshots of my own test runs, which I laid out in Canva myself.
 
